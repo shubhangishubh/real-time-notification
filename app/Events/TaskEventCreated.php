@@ -31,10 +31,9 @@ class TaskEventCreated implements ShouldBroadcast
      */
     public function broadcastOn(): Channel
     {
-        // return [
-        //     new PrivateChannel('usersDetails'.$this->realTask->user_id),
-        // ];
-        return new Channel('tasks'); // public channel
+        //return new PrivateChannel('tasks');
+        return new PrivateChannel('tasks.'.$this->realTask->user_id);
+
     }
 
     public function broadcastAs(): string
@@ -47,7 +46,7 @@ class TaskEventCreated implements ShouldBroadcast
         return [
         'task_id' => $this->realTask->id,
         'title' => $this->realTask->title,
-        'assigned_user_id' => $this->realTask->user_id,
+        'user_id' => $this->realTask->user_id,
         'status' => $this->realTask->status,
         'created_at' => optional($this->realTask->created_at)?->toISOString(),
         ];

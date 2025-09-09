@@ -1,39 +1,42 @@
-/**
- * We'll load the axios HTTP library which allows us to easily issue requests
- * to our Laravel back-end. This library automatically handles sending the
- * CSRF token as a header based on the value of the "XSRF" token cookie.
- */
-
 import axios from 'axios';
+import Echo from 'laravel-echo';
+import Pusher from 'pusher-js';
+
+window.Pusher = Pusher;
 window.axios = axios;
 
 window.axios.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
 
-/**
- * Echo exposes an expressive API for subscribing to channels and listening
- * for events that are broadcast by Laravel. Echo and event broadcasting
- * allows your team to easily build robust real-time web applications.
- */
+const bearerToken = '9|K3ACKeOKGZFvoHfuRuEbDNL6wiaBScmeZYY78d99ae41a30f';
 
-import Echo from 'laravel-echo';
+axios.get('/api/user', {
+  headers: {
+    Authorization: `Bearer ${bearerToken}`,
+  }
+})
+.then(response => {
+  const userId = response.data.id;
 
-import Pusher from 'pusher-js';
-window.Pusher = Pusher;
-
-window.Echo = new Echo({
+  window.Echo = new Echo({
     broadcaster: 'pusher',
     key: import.meta.env.VITE_PUSHER_APP_KEY,
-    cluster: import.meta.env.VITE_PUSHER_APP_CLUSTER ?? 'mt1',
-    wsHost: import.meta.env.VITE_PUSHER_HOST ? import.meta.env.VITE_PUSHER_HOST : `ws-${import.meta.env.VITE_PUSHER_APP_CLUSTER}.pusher.com`,
-    wsPort: import.meta.env.VITE_PUSHER_PORT ?? 80,
-    wssPort: import.meta.env.VITE_PUSHER_PORT ?? 443,
-    forceTLS: (import.meta.env.VITE_PUSHER_SCHEME ?? 'https') === 'https',
-    enabledTransports: ['ws', 'wss'],
-});
-window.Echo.channel(`tasks`)
+    cluster: 'mt1',
+    forceTLS: false,
+    disableStats: true,
+    authEndpoint: '/broadcasting/auth',
+    auth: {
+      headers: {
+        Authorization: `Bearer ${bearerToken}`
+      }
+    }
+  });
+
+  window.Echo.private(`tasks.${userId}`)
     .listen('.realTask.created', (e) => {
-        console.log('New Task:', e);
-        // Display task in UI
-        console.log(`New Task Created: ${e.title} (Assigned to: ${e.assigned_user_id})`)
-        alert(`New Task Created: ${e.title} (Assigned to: ${e.assigned_user_id})`);
+      console.log('New Task:', e);
+      alert(`New Task Created: ${e.task_id} Title: ${e.title})`);
+    });
+})
+.catch(error => {
+  console.error('User not authenticated', error);
 });

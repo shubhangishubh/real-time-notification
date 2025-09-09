@@ -3,6 +3,7 @@
 <html>
 <head>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="user-id" content="{{ auth()->id() }}">
     <title>Task Notifications</title>
     <script src="https://js.pusher.com/8.2/pusher.min.js"></script>
     @vite('resources/js/app.js') <!-- if you are using Vite -->
@@ -10,13 +11,5 @@
 <body>
     <h1>Listening for Task Notifications...</h1>
     
-    <script>
-        console.log('Setting up Echo listener for tasks channel');
-        window.Echo.channel('tasks')
-            .listen('.realTask.created', (e) => {
-                console.log('New Task:', e);
-                alert(`New Task: ${e.title} | Assigned to: ${e.assigned_user_id}`);
-            });
-    </script>
 </body>
 </html>
